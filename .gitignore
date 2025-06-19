@@ -1,0 +1,15 @@
+# Binaries
+*.exe
+*.out
+*.test
+
+# Dependency directories
+vendor/
+
+# OS and editor junk
+.DS_Store
+.idea/
+.vscode/
+
+# Env files
+.env
