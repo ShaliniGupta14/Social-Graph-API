@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"social_graph_api/models"
+
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -37,6 +39,13 @@ func ConnectDB() {
 	}
 
 	fmt.Println("✅ Connected to the database successfully!")
+
+	err = database.AutoMigrate(&models.User{})
+	if err != nil {
+		log.Fatal("❌ Failed to migrate User model: ", err)
+	}
+
+	fmt.Println("✅ User model migrated successfully!")
 
 	DB = database
 }
