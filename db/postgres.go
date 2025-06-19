@@ -28,11 +28,9 @@ func ConnectDB() {
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
 
-	// Build connection string
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		host, user, password, dbname, port)
 
-	// Connect to DB
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
@@ -76,5 +74,33 @@ func ConnectDB() {
 			fmt.Println("✅ Seeded initial users!")
 		}
 	}
+
+	var dbUsers []models.User
+	DB.Find(&dbUsers)
+
+	emailToUser := make(map[string]models.User)
+	for _, user := range dbUsers {
+		emailToUser[user.Email] = user
+	}
+
+	// Define connections: A -> B means mutual friendship
+	connectPairs := [][2]string{
+		{"alice@example.com", "bob@example.com"},
+		{"alice@example.com", "charlie@example.com"},
+		{"bob@example.com", "lily@example.com"},
+		{"charlie@example.com", "claire@example.com"},
+		{"claire@example.com", "hazel@example.com"},
+		{"baker@example.com", "callum@example.com"},
+		{"cassie@example.com", "ivy@example.com"},
+	}
+
+	for _, pair := range connectPairs {
+		u1 := emailToUser[pair[0]]
+		u2 := emailToUser[pair[1]]
+		// Connect both ways
+		DB.Model(&u1).Association("Connections").Append(&u2)
+		DB.Model(&u2).Association("Connections").Append(&u1)
+	}
+	fmt.Println("✅ Sample user connections seeded!")
 
 }
