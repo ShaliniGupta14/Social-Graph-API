@@ -12,5 +12,7 @@ func SetupRouter() *gin.Engine {
 	r.POST("/users", handlers.CreateUser)
 	r.GET("/users", handlers.GetAllUsers)
 
+	r.POST("/connect", handlers.ConnectUsers)
+
 	return r
 }
