@@ -40,6 +40,8 @@ func ConnectDB() {
 
 	fmt.Println("✅ Connected to the database successfully!")
 
+	DB = database
+
 	err = database.AutoMigrate(&models.User{})
 	if err != nil {
 		log.Fatal("❌ Failed to migrate User model: ", err)
@@ -47,5 +49,32 @@ func ConnectDB() {
 
 	fmt.Println("✅ User model migrated successfully!")
 
-	DB = database
+	var count int64
+	DB.Model(&models.User{}).Count(&count)
+	if count == 0 {
+		users := []models.User{
+			{Name: "Alice", Email: "alice@example.com"},
+			{Name: "Bob", Email: "bob@example.com"},
+			{Name: "Charlie", Email: "charlie@example.com"},
+			{Name: "Lily", Email: "lily@example.com"},
+			{Name: "Claire", Email: "claire@example.com"},
+			{Name: "Andreas", Email: "andreas@example.com"},
+			{Name: "Nyomi", Email: "nyomi@example.com"},
+			{Name: "Hazel", Email: "hazel@example.com"},
+			{Name: "Baker", Email: "baker@example.com"},
+			{Name: "Callum", Email: "callum@example.com"},
+			{Name: "Ivy", Email: "ivy@example.com"},
+			{Name: "Cassie", Email: "cassie@example.com"},
+			{Name: "Tiffany", Email: "tiffany@example.com"},
+			{Name: "Sasha", Email: "sasha@example.com"},
+			{Name: "Sean", Email: "sean@example.com"},
+			{Name: "Jefferson", Email: "jefferson@example.com"},
+		}
+		if err := DB.Create(&users).Error; err != nil {
+			log.Fatal("❌ Failed to seed users: ", err)
+		} else {
+			fmt.Println("✅ Seeded initial users!")
+		}
+	}
+
 }
