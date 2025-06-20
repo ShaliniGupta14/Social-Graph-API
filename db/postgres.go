@@ -83,7 +83,6 @@ func ConnectDB() {
 		emailToUser[user.Email] = user
 	}
 
-	// Define connections: A -> B means mutual friendship
 	connectPairs := [][2]string{
 		{"alice@example.com", "bob@example.com"},
 		{"alice@example.com", "charlie@example.com"},
@@ -97,10 +96,17 @@ func ConnectDB() {
 	for _, pair := range connectPairs {
 		u1 := emailToUser[pair[0]]
 		u2 := emailToUser[pair[1]]
-		// Connect both ways
-		DB.Model(&u1).Association("Connections").Append(&u2)
-		DB.Model(&u2).Association("Connections").Append(&u1)
+
+		if u1.ID != 0 && u2.ID != 0 {
+			err := DB.Model(&u1).Association("Connections").Append(&u2)
+			if err != nil {
+				log.Printf("❌ Failed to connect %s and %s: %v", u1.Email, u2.Email, err)
+			}
+			err = DB.Model(&u2).Association("Connections").Append(&u1)
+			if err != nil {
+				log.Printf("❌ Failed to connect %s and %s: %v", u2.Email, u1.Email, err)
+			}
+		}
 	}
-	fmt.Println("✅ Sample user connections seeded!")
 
 }

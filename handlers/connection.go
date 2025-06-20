@@ -46,3 +46,53 @@ func ConnectUsers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "✅ Users connected successfully!"})
 }
+
+func GetConnections(c *gin.Context) {
+	var user models.User
+	if err := db.DB.Preload("Connections").First(&user, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+	c.JSON(http.StatusOK, user.Connections)
+}
+
+func GetRecommendations(c *gin.Context) {
+	var user models.User
+	if err := db.DB.Preload("Connections").First(&user, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// 1st-degree connections map
+	firstDegree := make(map[uint]bool)
+	for _, conn := range user.Connections {
+		firstDegree[conn.ID] = true
+	}
+
+	recommendations := []models.User{}
+	for _, conn := range user.Connections {
+		var secondDegreeUser models.User
+		if err := db.DB.Preload("Connections").First(&secondDegreeUser, conn.ID).Error; err != nil {
+			continue
+		}
+		for _, friendOfFriend := range secondDegreeUser.Connections {
+			// Skip if self or already a connection
+			if friendOfFriend.ID == user.ID || firstDegree[friendOfFriend.ID] {
+				continue
+			}
+			// Avoid duplicates
+			exists := false
+			for _, rec := range recommendations {
+				if rec.ID == friendOfFriend.ID {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				recommendations = append(recommendations, *friendOfFriend)
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, recommendations)
+}

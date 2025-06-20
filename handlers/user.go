@@ -36,7 +36,7 @@ func CreateUser(c *gin.Context) {
 
 func GetAllUsers(c *gin.Context) {
 	var users []models.User
-	if err := db.DB.Find(&users).Error; err != nil {
+	if err := db.DB.Preload("Connections").Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
 		return
 	}
